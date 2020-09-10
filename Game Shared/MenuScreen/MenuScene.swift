@@ -12,9 +12,11 @@ import WatchKit
 #endif
 
 class MenuScene: SKScene {
-    fileprivate var playLabel : SKLabelNode?
+    fileprivate var playLabel : SKLabelNode? = SKLabelNode()
     fileprivate var settingsLabel : SKLabelNode?
     fileprivate var leaderboardLabel : SKLabelNode?
+    
+    private var currentLabelName: String? = nil
 
     class func newScene() -> MenuScene {
         // Load 'MenuScene.sks' as an SKScene.
@@ -47,6 +49,12 @@ class MenuScene: SKScene {
         leaderboardLabel?.run(SKAction.fadeIn(withDuration: 1.0))
     }
     
+    func resetLabels() {
+        playLabel?.fontColor = .white
+        settingsLabel?.fontColor = .white
+        leaderboardLabel?.fontColor = .white
+    }
+    
     #if os(watchOS)
     override func sceneDidLoad() {
         self.setUpScene()
@@ -62,47 +70,83 @@ class MenuScene: SKScene {
     }
 }
 
+
 #if os(iOS) || os(tvOS)
 // Touch-based event handling
 extension MenuScene {
+    
+    func pressIn() {
+        if currentLabelName == "playLabel" {
+            playLabel?.run(SKAction.init(named: "PressIn")!, withKey: "fadeInOut")
+            playLabel?.fontColor = .red
+        }
+        if currentLabelName == "settingsLabel" {
+            settingsLabel?.run(SKAction.init(named: "PressIn")!, withKey: "fadeInOut")
+            settingsLabel?.fontColor = .red
+            
+        }
+        if currentLabelName == "leaderboardLabel" {
+            leaderboardLabel?.run(SKAction.init(named: "PressIn")!, withKey: "fadeInOut")
+            leaderboardLabel?.fontColor = .red
+        }
+    }
+    
+    func pressOut() {
+        if currentLabelName == "playLabel" {
+            playLabel?.run(SKAction.init(named: "PressOut")!, withKey: "fadeInOut")
+            playLabel?.fontColor = .white
+        }
+        if currentLabelName == "settingsLabel" {
+            settingsLabel?.run(SKAction.init(named: "PressOut")!, withKey: "fadeInOut")
+            settingsLabel?.fontColor = .white
+            
+        }
+        if currentLabelName == "leaderboardLabel" {
+            leaderboardLabel?.run(SKAction.init(named: "PressOut")!, withKey: "fadeInOut")
+            leaderboardLabel?.fontColor = .white
+        }
+    }
+    
+    func navigateIfPressed() {
+        if currentLabelName == "playLabel" {
+            view?.presentScene(GameScene.newScene())
+        }
+        if currentLabelName == "settingsLabel" {
+            view?.presentScene(SettingsScene.newScene())
+        }
+        if currentLabelName == "leaderboardLabel" {
+            view?.presentScene(LeaderboardScene.newScene())
+        }
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else {
             return
         }
         let location = touch.location(in: self)
         let touchNode:SKNode = self.atPoint(location)
-        
-        if touchNode.name == "playLabel" {
-            playLabel?.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-        }
-        if touchNode.name == "settingsLabel" {
-            settingsLabel?.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
-        }
-        if touchNode.name == "leaderboardLabel" {
-            leaderboardLabel?.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
+        if touchNode.name != currentLabelName {
+            currentLabelName = touchNode.name
+            pressIn()
         }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else {
             return
         }
         let location = touch.location(in: self)
         let touchNode:SKNode = self.atPoint(location)
-        
-        if touchNode.name == "playLabel" {
-            view?.presentScene(GameScene.newScene())
+        if touchNode.name != nil && touchNode.name != currentLabelName {
+            pressOut()
+            currentLabelName = touchNode.name
+            pressIn()
         }
-        if touchNode.name == "settingsLabel" {
-            view?.presentScene(SettingsScene.newScene())
-        }
-        if touchNode.name == "leaderboardLabel" {
-            view?.presentScene(LeaderboardScene.newScene())
-        }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        pressOut()
+        navigateIfPressed()
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {

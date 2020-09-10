@@ -36,14 +36,13 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         menuLabel = childNode(withName: "//menuLabel") as? SKLabelNode
+        #if os(tvOS)
+        menuLabel?.isHidden = true
+        #endif
         
         topLbl = self.childNode(withName: "topLabel") as! SKLabelNode
         btmLbl = self.childNode(withName: "btmLabel") as! SKLabelNode
         ball = self.childNode(withName: "ball") as! SKSpriteNode
-        
-        print(self.view?.bounds.height)
-        print(self.view?.bounds.width)
-        print(self.frame)
 
         menuLabel?.position.x = (self.frame.width / 2) - 50
         menuLabel?.position.y = (self.frame.height / 2) - 50
@@ -68,7 +67,7 @@ class GameScene: SKScene {
         score = [0,0]
         topLbl.text = "\(score[1])"
         btmLbl.text = "\(score[0])"
-        ball.physicsBody?.applyImpulse(CGVector(dx: 5 , dy: 5))
+        ball.physicsBody?.applyImpulse(CGVector(dx: 2 , dy: 5))
     }
 
     func addScore(playerWhoWon : SKSpriteNode){
@@ -78,11 +77,11 @@ class GameScene: SKScene {
         
         if playerWhoWon == main {
             score[0] += 1
-            ball.physicsBody?.applyImpulse(CGVector(dx: 5, dy: 5))
+            ball.physicsBody?.applyImpulse(CGVector(dx: 2, dy: 5))
         }
         else if playerWhoWon == enemy {
             score[1] += 1
-            ball.physicsBody?.applyImpulse(CGVector(dx: -5, dy: -5))
+            ball.physicsBody?.applyImpulse(CGVector(dx: -2, dy: -10))
         }
         
         topLbl.text = "\(score[1])"
@@ -114,7 +113,8 @@ extension GameScene {
             
             let touchNode:SKNode = self.atPoint(location)
             if touchNode.name == "menuLabel" {
-                menuLabel?.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
+                menuLabel?.run(SKAction.init(named: "PressIn")!, withKey: "fadeInOut")
+                menuLabel?.fontColor = .red
                 view?.presentScene(MenuScene.newScene())
             }
         }

@@ -12,6 +12,8 @@ class SettingsScene: SKScene {
     fileprivate var title : SKLabelNode?
     fileprivate var menuLabel : SKLabelNode?
     
+    private var currentLabelName: String? = nil
+    
     class func newScene() -> SettingsScene {
         // Load 'SettingsScene.sks' as an SKScene.
         guard let scene = SKScene(fileNamed: "SettingsScene") as? SettingsScene else {
@@ -29,6 +31,17 @@ class SettingsScene: SKScene {
         // Get label node from scene and store it for use later
         title = childNode(withName: "//title") as? SKLabelNode
         menuLabel = childNode(withName: "//menuLabel") as? SKLabelNode
+        
+        #if os(iOS)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            title?.position.y = (self.frame.height / 2) - 100
+            menuLabel?.position.y = (self.frame.height / 2) - 100
+        }
+        #endif
+        
+        #if os(tvOS)
+        menuLabel?.isHidden = true
+        #endif
     }
     
     #if os(watchOS)
@@ -56,29 +69,32 @@ extension SettingsScene {
         let location = touch.location(in: self)
         let touchNode:SKNode = self.atPoint(location)
         
+        currentLabelName = touchNode.name
         if touchNode.name == "menuLabel" {
-            menuLabel?.run(SKAction.init(named: "Pulse")!, withKey: "fadeInOut")
+            menuLabel?.run(SKAction.init(named: "PressIn")!, withKey: "fadeInOut")
+            menuLabel?.fontColor = .red
         }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else {
             return
         }
         let location = touch.location(in: self)
         let touchNode:SKNode = self.atPoint(location)
-        
-        if touchNode.name == "menuLabel" {
-            view?.presentScene(MenuScene.newScene())
+        if touchNode.name != nil && touchNode.name != currentLabelName {
+            currentLabelName = touchNode.name
+            if touchNode.name == "menuLabel" {
+                menuLabel?.run(SKAction.init(named: "PressIn")!, withKey: "fadeInOut")
+                menuLabel?.fontColor = .red
+            }
         }
     }
     
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if currentLabelName == "menuLabel" {
+            view?.presentScene(MenuScene.newScene())
+        }
     }
 }
 #endif
