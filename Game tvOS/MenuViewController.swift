@@ -43,8 +43,11 @@ class MenuViewController: UIViewController {
     
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         // Detect a remote button press
-        if presses.first?.type == .menu { // Detect the menu button
-            let skView = self.view as? SKView
+        
+        let skView = self.view as? SKView
+        
+        if presses.first?.type == .menu && skView?.scene?.name != "menu" {
+           
             skView?.presentScene(MenuScene.newScene())
         }
         else { // Pass it to 'super' to allow it to do what it's supposed to do if it's not a menu press
